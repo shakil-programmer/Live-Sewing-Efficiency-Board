@@ -234,16 +234,24 @@
       }
 
       .kpi-card {
-        background: #fff;
-        padding: 8px 6px;
-        border-radius: 6px;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        text-align: left;
-        min-width: 0;
-      }
+  background: #fff;
+  padding: 8px 8px; /* প্যাডিং বাড়িয়ে হাইট বাড়ানো হলো */
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  min-width: 0;
+  min-height: 65px; /* একটি মিনিমাম স্ট্যান্ডার্ড হাইট সেট করা হলো */
+}
+      .kpi-sub-variance {
+  font-size: 11px;
+  font-weight: 800;
+  margin-top: 6px; /* উপর থেকে একটু স্পেস দেওয়া হলো */
+  white-space: nowrap;
+  display: block; /* লেখাটি যেন নিচে নেমে যায় */
+}
 
       .kpi-card.green-bot {
         border-bottom: 4px solid #22c55e;
@@ -307,6 +315,13 @@
         font-weight: 700;
         color: #c026d3;
         margin-top: 1px;
+        white-space: nowrap;
+      }
+
+      .kpi-sub-variance {
+        font-size: 9px;
+        font-weight: 800;
+        margin-top: 2px;
         white-space: nowrap;
       }
 
@@ -386,7 +401,6 @@
         font-size: 13px;
       }
 
-      /* STYLE column - wrap when text is long */
       tbody td:nth-child(3) {
         white-space: normal;
         word-break: break-word;
@@ -811,6 +825,7 @@
           <div class="kpi-content">
             <div class="kpi-label" style="color: #16a34a">Total Output</div>
             <div class="kpi-val sm green" id="kpi-total-output">0</div>
+            <div class="kpi-sub-variance" id="kpi-output-variance"></div>
           </div>
         </div>
         <div class="kpi-card purple-bg kpi-full">
@@ -830,28 +845,27 @@
       <div class="table-wrap">
         <table>
           <colgroup>
-            <col style="width: 75px" />   <!-- Line -->
-            <col style="width: 85px" />   <!-- Buyer -->
-            <col style="width: 150px" />  <!-- Style -->
-            <col style="width: 55px" />   <!-- Manpower -->
-           <!--  <col style="width: 50px"; />   <-- SMV -->
-            <col style="width: 50px" />   <!-- WH Plan -->
-            <col style="width: 50px" />   <!-- IE% -->
-            <col style="width: 55px" />   <!-- Target/Hr -->
-            <col style="width: 45px" />   <!-- 8-9 -->
-            <col style="width: 45px" />   <!-- 9-10 -->
-            <col style="width: 45px" />   <!-- 10-11 -->
-            <col style="width: 45px" />   <!-- 11-12 -->
-            <col style="width: 45px" />   <!-- 12-1 -->
-            <col style="width: 45px" />   <!-- 2-3 -->
-            <col style="width: 45px" />   <!-- 3-4 -->
-            <col style="width: 45px" />   <!-- 4-5 -->
-            <col style="width: 45px" />   <!-- 5-6 -->
-            <col style="width: 45px" />   <!-- 6-7 -->
-            <col style="width: 60px" />   <!-- Total -->
-            <col style="width: 65px" />   <!-- Eff % -->
-            <col style="width: 100px" />  <!-- Status -->
-            <col style="width: 140px" />  <!-- Comments -->
+            <col style="width: 75px" />
+            <col style="width: 85px" />
+            <col style="width: 150px" />
+            <col style="width: 55px" />
+            <col style="width: 50px" />
+            <col style="width: 50px" />
+            <col style="width: 55px" />
+            <col style="width: 45px" />
+            <col style="width: 45px" />
+            <col style="width: 45px" />
+            <col style="width: 45px" />
+            <col style="width: 45px" />
+            <col style="width: 45px" />
+            <col style="width: 45px" />
+            <col style="width: 45px" />
+            <col style="width: 45px" />
+            <col style="width: 45px" />
+            <col style="width: 60px" />
+            <col style="width: 65px" />
+            <col style="width: 100px" />
+            <col style="width: 140px" />
           </colgroup>
           <thead>
             <tr>
@@ -859,7 +873,6 @@
               <th>Buyer</th>
               <th>Style</th>
               <th>M/P</th>
-              <!-- <th>SMV</th> -->
               <th>WH</th>
               <th>IE%</th>
               <th>Tgt/Hr</th>
@@ -1101,6 +1114,7 @@
         ].forEach((id) => (document.getElementById(id).innerText = "0"));
         document.getElementById("kpi-avg-ie-target").innerText =
           "Avg IE Target: 0%";
+        document.getElementById("kpi-output-variance").innerHTML = "";
         ["kpi-achieved", "kpi-warning", "kpi-critical"].forEach(
           (id) =>
             (document.getElementById(id).innerHTML =
@@ -1124,16 +1138,23 @@
           renderNoData();
           return;
         }
-        let successLines = 0,
-          warnLines = 0,
-          critLines = 0;
+        let successLinesCount = 0,
+          warnLinesCount = 0,
+          critLinesCount = 0;
+        
+        let successEffSum = 0,
+          warnEffSum = 0,
+          critEffSum = 0;
+
         let totalTarget = 0,
           totalOutput = 0,
-          totalManpower = 0;
-        // Sums used for the overall efficiency KPI - built the same way as each line's own
-        // efficiency (output vs entered-hours target, rescaled by that line's IE Target%)
-        let sumLineTgt = 0,
-          sumIEWeighted = 0;
+          totalManpower = 0,
+          totalCurrentActiveTarget = 0;
+        
+        let sumIEPct = 0;
+        let sumEffPct = 0;
+        let activeLinesCount = 0;
+
         let hourly = Array(10).fill(0);
         let effArr = [];
         rows.forEach((row) => {
@@ -1143,9 +1164,7 @@
           const manpower = parseFloat(row[3]) || 0;
           const smv = parseFloat(row[4]) || 0;
           const whPlan = parseFloat(row[5]) || 0;
-          // IE Target% comes as a decimal fraction (e.g. 0.65) from a %-formatted sheet cell
           const iePct = parseFloat(row[6]) || 0;
-          // IE Target Pcs (hourly target) is taken directly from the sheet, always rounded to a whole number
           const hourlyTarget = Math.round(parseFloat(row[7]) || 0);
           const commentStr = row[18] || "";
           const colIndices = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
@@ -1160,18 +1179,20 @@
           const lineTgt = hourlyTarget * enteredHours;
 
           totalManpower += manpower;
-          // KPI box "Total Target" uses the full planned working-hour target for the day
           totalTarget += hourlyTarget * whPlan;
+          totalCurrentActiveTarget += lineTgt;
           totalOutput += lineOut;
-          // Accumulate for the overall-efficiency KPI, same basis as the per-line calc below
-          sumLineTgt += lineTgt;
-          sumIEWeighted += iePct * lineTgt;
+          
           hrs.forEach((v, i) => {
             if (v !== null) hourly[i] += v;
           });
-          // Line efficiency: output vs its own entered-hours target, rescaled to that
-          // line's own IE Target% so the number is directly comparable to the IE% goal
+
           const pct = lineTgt > 0 ? (lineOut / lineTgt) * (iePct * 100) : 0;
+          
+          sumIEPct += (iePct * 100);
+          sumEffPct += pct;
+          activeLinesCount++;
+
           const achieveCut = iePct * 100;
           const warnCut = achieveCut - 15;
           let badgeCls = "badge-critical",
@@ -1181,14 +1202,17 @@
             badgeCls = "badge-achieved";
             badgeLbl = "ACHIEVED";
             txtCls = "txt-green";
-            successLines++;
+            successLinesCount++;
+            successEffSum += pct;
           } else if (pct >= warnCut) {
             badgeCls = "badge-warning";
             badgeLbl = "WARNING";
             txtCls = "txt-yellow";
-            warnLines++;
+            warnLinesCount++;
+            warnEffSum += pct;
           } else {
-            critLines++;
+            critLinesCount++;
+            critEffSum += pct;
           }
           effArr.push({ line: lineStr, pct, status: badgeLbl });
           const hrCells = hrs
@@ -1200,7 +1224,6 @@
           <td class="left">${buyerStr}</td>                
           <td>${styleStr}</td>                
           <td>${manpower || "-"}</td>                
-          <!-- <td>${smv || "-"}</td> -->               
           <td>${whPlan || "-"}</td>                
           <td>${iePct ? (iePct * 100).toFixed(0) + "%" : "-"}</td>                
           <td style="color:#115e59">${hourlyTarget ? hourlyTarget : "-"}</td>                
@@ -1212,30 +1235,65 @@
         });
         const n = rows.length;
         document.getElementById("kpi-total-lines").innerText = n;
+        
+        // Calculate dynamic averages based on active lines count to align with overall sum efficiency
+        const avgSuccessEff = activeLinesCount > 0 ? (successEffSum / activeLinesCount) : 0;
+        const avgWarnEff = activeLinesCount > 0 ? (warnEffSum / activeLinesCount) : 0;
+        const avgCritEff = activeLinesCount > 0 ? (critEffSum / activeLinesCount) : 0;
+
         document.getElementById("kpi-achieved").innerHTML =
-          `${successLines} <span style="font-size:13px;color:#9ca3af">${((successLines / n) * 100).toFixed(1)}%</span>`;
+          `${successLinesCount} <span style="font-size:13px;color:#9ca3af">${avgSuccessEff.toFixed(2)}%</span>`;
         document.getElementById("kpi-warning").innerHTML =
-          `${warnLines}   <span style="font-size:13px;color:#9ca3af">${((warnLines / n) * 100).toFixed(1)}%</span>`;
+          `${warnLinesCount}   <span style="font-size:13px;color:#9ca3af">${avgWarnEff.toFixed(2)}%</span>`;
         document.getElementById("kpi-critical").innerHTML =
-          `${critLines}   <span style="font-size:13px;color:#9ca3af">${((critLines / n) * 100).toFixed(1)}%</span>`;
+          `${critLinesCount}   <span style="font-size:13px;color:#9ca3af">${avgCritEff.toFixed(2)}%</span>`;
+        
         document.getElementById("kpi-total-manpower").innerText =
           totalManpower.toLocaleString();
         document.getElementById("kpi-total-target").innerText =
           Math.round(totalTarget).toLocaleString();
         document.getElementById("kpi-total-output").innerText =
           totalOutput.toLocaleString();
-        // Overall Efficiency = same formula as each line's own efficiency, applied to the
-        // totals: total output vs total entered-hours target, rescaled by the target-weighted
-        // average IE Target% across all lines
-        const avgIEPct = sumLineTgt > 0 ? sumIEWeighted / sumLineTgt : 0;
-        const sysPct =
-          sumLineTgt > 0 ? (totalOutput / sumLineTgt) * (avgIEPct * 100) : 0;
-        document.getElementById("kpi-overall-ach").innerText =
-          sysPct.toFixed(2) + "%";
+
+        // Total Output Less / Over Calculation based on actual target hours accumulated so far
+        // Total Output Less / Over Calculation based on actual target hours accumulated so far
+        const outputVariance = totalOutput - totalCurrentActiveTarget;
+        const varEl = document.getElementById("kpi-output-variance");
+        if (outputVariance < 0) {
+          varEl.style.color = "#ef4444";
+          varEl.innerHTML = `<i class="fa-solid fa-arrow-trend-down"></i> Less: ${Math.abs(outputVariance).toLocaleString()}`;
+        } else {
+          varEl.style.color = "#16a34a";
+          varEl.innerHTML = `<i class="fa-solid fa-arrow-trend-up"></i> Over: ${outputVariance.toLocaleString()}`;
+        }
+
+        const finalAvgIE = activeLinesCount > 0 ? sumIEPct / activeLinesCount : 0;
+        const finalSysPct = activeLinesCount > 0 ? sumEffPct / activeLinesCount : 0;
+
+        // ===== Overall Efficiency-এর নিচে ভ্যারিয়েন্স দেখানোর নতুন কোড =====
+        const effCardValue = document.getElementById("kpi-overall-ach");
+        const effVariance = finalSysPct - finalAvgIE; // Target থেকে বিয়োগফল
+        
+        if (effVariance < 0) {
+          // মূল ভ্যালু ঠিক রেখে নিচে লাল রঙে ডাউন অ্যারো ও ভ্যারিয়েন্স
+          effCardValue.innerHTML = `
+            ${finalSysPct.toFixed(2)}%
+            <span class="kpi-sub-variance" style="color: #dc2626;">
+              <i class="fa-solid fa-arrow-trend-down"></i> Less: ${Math.abs(effVariance).toFixed(2)}%
+            </span>`;
+        } else {
+          // মূল ভ্যালু ঠিক রেখে নিচে সবুজ রঙে আপ অ্যারো ও ভ্যারিয়েন্স
+          effCardValue.innerHTML = `
+            ${finalSysPct.toFixed(2)}%
+            <span class="kpi-sub-variance" style="color: #16a34a;">
+              <i class="fa-solid fa-arrow-trend-up"></i> Over: ${effVariance.toFixed(2)}%
+            </span>`;
+        }
+        
         document.getElementById("kpi-avg-ie-target").innerText =
-          `Avg IE Target: ${(avgIEPct * 100).toFixed(2)}%`;
-        // Top/Low performing lines follow the exact same ACHIEVED/CRITICAL classification
-        // used for each line's status badge above (dynamic per-line IE% threshold)
+          `Avg IE Target: ${finalAvgIE.toFixed(2)}%`;
+ 
+
         globalTopLines = effArr
           .filter((x) => x.status === "ACHIEVED")
           .sort((a, b) => b.pct - a.pct);
