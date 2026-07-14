@@ -830,11 +830,11 @@
       <div class="table-wrap">
         <table>
           <colgroup>
-            <col style="width: 55px" />   <!-- Line -->
+            <col style="width: 75px" />   <!-- Line -->
             <col style="width: 85px" />   <!-- Buyer -->
             <col style="width: 150px" />  <!-- Style -->
             <col style="width: 55px" />   <!-- Manpower -->
-            <col style="width: 50px" />   <!-- SMV -->
+           <!--  <col style="width: 50px"; />   <-- SMV -->
             <col style="width: 50px" />   <!-- WH Plan -->
             <col style="width: 50px" />   <!-- IE% -->
             <col style="width: 55px" />   <!-- Target/Hr -->
@@ -859,7 +859,7 @@
               <th>Buyer</th>
               <th>Style</th>
               <th>M/P</th>
-              <th>SMV</th>
+              <!-- <th>SMV</th> -->
               <th>WH</th>
               <th>IE%</th>
               <th>Tgt/Hr</th>
@@ -1195,7 +1195,19 @@
             .map((v) => `<td>${v === null ? "-" : v}</td>`)
             .join("");
           const tr = document.createElement("tr");
-          tr.innerHTML = `                <td class="gray-bg">${lineStr}</td>                <td class="left">${buyerStr}</td>                <td>${styleStr}</td>                <td>${manpower || "-"}</td>                <td>${smv || "-"}</td>                <td>${whPlan || "-"}</td>                <td>${iePct ? (iePct * 100).toFixed(0) + "%" : "-"}</td>                <td style="color:#115e59">${hourlyTarget ? hourlyTarget : "-"}</td>                ${hrCells}                <td class="blue-bg">${lineOut.toLocaleString()}</td>                <td class="blue-bg ${txtCls}">${pct.toFixed(2)}%</td>                <td><span class="badge ${badgeCls}">${badgeLbl}</span></td>                <td class="left" style="font-size:13px;color:navy;font-weight:700;white-space:normal;word-break:break-word;line-height:1.4">${commentStr}</td>`;
+          tr.innerHTML = `                
+          <td class="gray-bg">${lineStr}</td>                
+          <td class="left">${buyerStr}</td>                
+          <td>${styleStr}</td>                
+          <td>${manpower || "-"}</td>                
+          <!-- <td>${smv || "-"}</td> -->               
+          <td>${whPlan || "-"}</td>                
+          <td>${iePct ? (iePct * 100).toFixed(0) + "%" : "-"}</td>                
+          <td style="color:#115e59">${hourlyTarget ? hourlyTarget : "-"}</td>                
+          ${hrCells}                <td class="blue-bg">${lineOut.toLocaleString()}</td>                
+          <td class="blue-bg ${txtCls}">${pct.toFixed(2)}%</td>                
+          <td><span class="badge ${badgeCls}">${badgeLbl}</span></td>                
+          <td class="left" style="font-size:13px;color:navy;font-weight:700;white-space:normal;word-break:break-word;line-height:1.4">${commentStr}</td>`;
           tbody.appendChild(tr);
         });
         const n = rows.length;
